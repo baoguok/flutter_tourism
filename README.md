@@ -17,7 +17,7 @@ samples, guidance on mobile development, and a full API reference.
 
 ## 截图
 
-<img src="https://github.com/chinafelix/app/blob/master/screenSheet/Screenshot_1562579118.png" width="200" />
+<img src="https://github.com/chinafelix/app/blob/master/screenSheet/Screenshot_1562579118.png" width="300" />
 ![Image](https://github.com/chinafelix/app/blob/master/screenSheet/Screenshot_1562579118.png)
 ![Image](https://github.com/chinafelix/app/blob/master/screenSheet/Screenshot_1562579125.png)
 ![Image](https://github.com/chinafelix/app/blob/master/screenSheet/Screenshot_1562579134.png)
