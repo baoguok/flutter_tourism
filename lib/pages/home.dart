@@ -14,55 +14,81 @@ class Home extends StatefulWidget {
 
 class _Home extends State<Home> {
   int _tabIndex = 0;
-  var banners = [], baseInfo = {},location={}, news={};
+  var banners = [], baseInfo = {},location={}, news=[],weather={};
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _bannerData();
+    _tourismInfo();
+    getLocation();
+    _getNews();
+  }
 
   @override
   Widget build(BuildContext context) {
     //路由传参
 //    final id = ModalRoute.of(context).settings.arguments;
-    _bannerData().then((res)=>{
-      banners = res.data['data']
-    });      //banner数据
-
-    _tourismInfo().then((res) =>{     //景区信息
-      baseInfo = res.data['data']
-    });
-
-    getLocation().then((res)=>{
-      location = res
-    });
-
-    _getNews().then((res)=>{
-      news = res.data['data']
-    });
 
     Widget News(){
-      print(news['list'].length);
-      if(news['list'].length>=0){
-        for(var i=0;i<news['list'].length;i++){
-          return Row(
-            children: <Widget>[
-              Image.asset('${news['list'][i]['coverUrl']}',fit: BoxFit.fitWidth,width: 118,),
-              SizedBox(width: 10,),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Text('${news['list'][i]['title']}',style: TextStyle(fontSize: 16),),
-                  Text('${news['list'][i]['subject']}',style: TextStyle(color: Colors.grey,fontSize: 13),),
-                  Text('${news['list'][i]['createTime']}',style: TextStyle(color: Colors.grey,fontSize: 12))
-                ],))
-            ],
-          );
-        }
+      if(news.isNotEmpty){
+        return Container(color: Colors.white,child: ListView.builder(
+          scrollDirection: Axis.vertical,
+          physics:NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: news.length,
+          itemBuilder: (context, i){
+            return Container(
+//              height: 121,
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                  border: Border(bottom: BorderSide(width: 1, style: BorderStyle.solid, color: Color(0xffeeeeee)))
+              ),
+              child: Row(children: <Widget>[
+                Image.network('${news[i]['coverUrl']}',fit: BoxFit.fitWidth,width: 118,),
+                SizedBox(width: 10,),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    Text(('${news[i]['title']}'.substring(0,10)+'...'),style: TextStyle(fontSize: 16),),
+                    RichText(text: TextSpan(text: '${news[i]['subject']}'.substring(0,30),
+                        style: TextStyle(color: Colors.grey,fontSize: 13),
+                        children: [TextSpan(text: '\u2026')]
+                    ),
+                      maxLines: 2,
+                    ),
+                    Text('${news[i]['createTime']}',style: TextStyle(color: Colors.grey,fontSize: 12))
+                  ],))
+              ],),
+            );
+          },
+        ),);
       }else {
-        return Expanded(child: Container(),);
+        return Container();
       }
     }
-    
+
+    Widget SwiperWidget(){
+      if(banners.isNotEmpty){
+        return Swiper(
+            itemCount: banners.length,
+            autoplay: true,
+            scrollDirection: Axis.horizontal,
+//                pagination: new SwiperPagination(),
+//                control: new SwiperControl(),
+            itemBuilder: (BuildContext, index){
+              return (Image.network(banners[index]['coverUrl'],fit: BoxFit.fill,));
+            },
+            duration: 500
+        );
+      }else{
+        return null;
+      }
+    }
+
     // TODO: implement build
     Widget onpress(index){
-      print(news['list']);
       if(index != _tabIndex){
         if(index == 2){
           Navigator.pushNamed(context, 'personal',arguments: {'id': index});
@@ -109,25 +135,13 @@ class _Home extends State<Home> {
         ],
       ),
       body: Container(
-        child: Column(
+        child: ListView(
           children: <Widget>[
 //            Image.network(banners[0]['coverUrl'])
             Container(
               width: MediaQuery.of(context).size.width,
               height: 165,
-              child: Swiper(
-                itemCount: banners.length,
-                autoplay: true,
-                scrollDirection: Axis.horizontal,
-//                pagination: new SwiperPagination(),
-//                control: new SwiperControl(),
-                itemBuilder: (BuildContext, index){
-//                  if(banners.length >= 0){
-                    return (Image.network(banners[index]['coverUrl'],fit: BoxFit.fill,));
-//                  }
-                },
-                duration: 500
-              ),
+              child: SwiperWidget()
             ),
             Container(
               padding: EdgeInsets.all(15),
@@ -138,32 +152,16 @@ class _Home extends State<Home> {
                     Expanded(child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Row(children: <Widget>[
-                          Text('${baseInfo['name']}', style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
-                          SizedBox(width: 5),
-                          Text('${baseInfo['type']}',style: TextStyle(fontSize: 13),),
-                          SizedBox(width: 5,),
-                          Text('${location['tempture']['data']['weather']}',style: TextStyle(fontSize: 13)),
-                          SizedBox(width: 5,),
-                          Text('${location['tempture']['data']['temperature']}',style: TextStyle(fontSize: 13)),
-                          SizedBox(width: 5,),
-                          Text('${location['tempture']['data']['wind']}',style: TextStyle(fontSize: 13,)),
-                        ]),
+                        Weather(),
                         SizedBox(height: 5,),
-                        Row(
-                          children: <Widget>[
-                            Image.asset('images/dizhi@3x.png', fit: BoxFit.contain,height: 16,),
-                            SizedBox(width: 5,),
-                            Text('${location['region']['data']['province']}${location['region']['data']['city']}',style: TextStyle(color: Colors.grey),)
-                          ],
-                        )
+                        Locations()
                       ],
                     )),
                     GestureDetector(
                       child: Icon(Icons.phone, size: 30,color: Color(0xff1EBDA8),),
                       onTap: (){
-                        print(baseInfo['telephone']);
-                        launch('tel:${baseInfo["telephone"]}');
+//                        print(baseInfo['telephone']);
+//                        launch('tel:${baseInfo["telephone"]}');
                       },
                     )
                   ]),
@@ -228,8 +226,8 @@ class _Home extends State<Home> {
                 Container(
                   padding: EdgeInsets.only(top: 10, bottom: 10, left: 15, right: 15),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border(bottom: BorderSide(color: Color(0xffeeeeee),width: 1))
+                      color: Colors.white,
+                      border: Border(bottom: BorderSide(color: Color(0xffeeeeee),width: 1))
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -242,32 +240,9 @@ class _Home extends State<Home> {
                     ],
                   ),
                 ),
-                Container(
-                  width: MediaQuery.of(context).size.width,
-                  padding: EdgeInsets.all(15),
-                  color: Colors.white,
-                  child: Column(
-                    children: <Widget>[
-                      News(),
-                      Row(
-                        children: <Widget>[
-                          Image.asset('images/avatar.jpg',fit: BoxFit.fitWidth,width: 118,),
-                          SizedBox(width: 10,),
-                          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                            Text('五一黄金周',style: TextStyle(fontSize: 16),),
-                            Text('按实际欧克怕热胡一平',style: TextStyle(color: Colors.grey,fontSize: 13),),
-                            Text('2019-05-01',style: TextStyle(color: Colors.grey,fontSize: 12))
-                          ],))
-                        ],
-                      ),
-                    ],
-                  ),
-                )
+                News()
               ],
             )
-
           ],
         ),
       ),
@@ -288,28 +263,70 @@ class _Home extends State<Home> {
     );
   }
 
+  Widget Weather(){
+    if(baseInfo.isNotEmpty && weather.isNotEmpty){
+      return (Row(children: <Widget>[
+        Text('${baseInfo['name']}', style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
+        SizedBox(width: 5),
+        Text('${baseInfo['type']}',style: TextStyle(fontSize: 13),),
+        SizedBox(width: 5,),
+        Text('${weather['weather']}',style: TextStyle(fontSize: 13)),
+        SizedBox(width: 5,),
+        Text('${weather['temperature']}',style: TextStyle(fontSize: 13)),
+        SizedBox(width: 5,),
+        Text('${weather['wind']}',style: TextStyle(fontSize: 13,)),
+      ]));
+    }else{
+      return Row();
+    }
+  }
+
+  Widget Locations(){
+    if(location.isNotEmpty){
+      return Row(
+        children: <Widget>[
+          Image.asset('images/dizhi@3x.png', fit: BoxFit.contain,height: 16,),
+          SizedBox(width: 5,),
+          Text('${location['province']}${location['city']}',style: TextStyle(color: Colors.grey),)
+        ],
+      );
+    }else {
+      return Row();
+    }
+  }
+
 
   _bannerData() async {     //banner图数据
-    return await HttpGo().get('/api/banner.json');
+    var res = await HttpGo().get('/api/banner.json',{});
+    setState(() {
+      banners = res.data['data'];
+    });
   }
 
   _tourismInfo() async {     //基本信息数据
-    return await HttpGo().get('/api/settings.json');
+    var res = await HttpGo().get('/api/settings.json',{});
+    setState(() {
+      baseInfo = res.data['data'];
+    });
   }
   
   getLocation() async {     //位置和天气
-    var region = await HttpGo().get('/api/settings/region.json');
+    var region = await HttpGo().get('/api/settings/region.json',{});
 //    print(region.data['data']['city']);
-    var tempture = await HttpGo().get('/api/settings/weater.json?city=${region.data['data']['city']}');
-//    print(tempture);
-    return {
-      'region': region.data,
-      'tempture': tempture.data
-    };
+    var tempture = await HttpGo().get('/api/settings/weater.json?city=${region.data['data']['city']}',{});
+
+    setState(() {
+      weather = tempture.data['data'];
+      location = region.data['data'];
+    });
   }
 
   _getNews() async {
-    return await HttpGo().get('/api/news.json?pageIndex=1&pageSize=10');
+    var data = await HttpGo().get('/api/news.json?pageIndex=1&pageSize=10',{});
+    List list = data.data['data']['list'];
+    setState(() {
+      news = list;
+    });
   }
 
 }

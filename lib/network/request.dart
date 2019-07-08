@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:convert';
@@ -26,7 +27,9 @@ class HttpGo {
       baseUrl: 'http://test.ming.32ui.cn/ming',
       connectTimeout: 10000,
       receiveTimeout: 10000,
-      headers: {},
+      headers: {
+//        "Authorization": '66CB513D75FF4B3869A576594E8398F2C02FCFFF4C1F024A9B9A8F8D713F4991'
+      },
       contentType: ContentType.json,
       responseType: ResponseType.json
     );
@@ -36,24 +39,24 @@ class HttpGo {
 
 
 //  get请求
-  get(String url,{params}) async {
+  get(String url,[params]) async {
     return await _requstHttp(url, GET, params);
   }
 
 //  post请求
-  post(String url, {params}) async {
+  post(String url, [params]) async {
     return await _requstHttp(url, POST, params);
   }
 
 //  带token的get请求
-  getWithToken(String url,{params}) async {
-    await _addStartHttpInterceptor(dio); //添加请求之前的拦截器
+  getWithToken(String url,token,[params]) async {
+    await _addStartHttpInterceptor(dio, token); //添加请求之前的拦截器
     return await _requstHttp(url, GET, params);
   }
 
 //  带token的post请求
-  postWithToken(String url, {params}) async {
-    await _addStartHttpInterceptor(dio); //添加请求之前的拦截器
+  postWithToken(String url, token, [params]) async {
+    await _addStartHttpInterceptor(dio, token); //添加请求之前的拦截器
     return await _requstHttp(url, POST, params);
   }
 
@@ -72,7 +75,7 @@ class HttpGo {
         }
       } else if (method == POST) {
         if (params != null && params.isNotEmpty) {
-          response = await dio.post(url, data: params);
+          response = await dio.post(url, queryParameters: params);
         } else {
           response = await dio.post(url);
         }
@@ -87,7 +90,14 @@ class HttpGo {
 //      if (dataMap != null && !dataMap['success']) {
 //        errorMsg = dataMap['msg'].toString();
 //      }
-
+      if(!response.data['success']){
+        Fluttertoast.showToast(
+          msg: response.data['msg'],
+          gravity: ToastGravity.CENTER,
+          textColor: Colors.white,
+          backgroundColor: Colors.red
+        );
+      }
       return response;
     } catch (exception) {
       _error(exception.toString());
@@ -101,13 +111,14 @@ class HttpGo {
       gravity: ToastGravity.CENTER);
   }
 
-  _addStartHttpInterceptor(Dio dio) {
+  _addStartHttpInterceptor(Dio dio, token) {
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options){
-        options.headers['Authorization'] = '';
+        options.headers['Authorization'] = token;
         return options;
       }
     ));
   }
 
 }
+//66CB513D75FF4B3869A576594E8398F2C02FCFFF4C1F024A9B9A8F8D713F4991
