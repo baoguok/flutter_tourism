@@ -16,7 +16,9 @@ For help getting started with Flutter, view our
 samples, guidance on mobile development, and a full API reference.
 
 ## 截图
-![Image](https://github.com/chinafelix/app/blob/master/screenSheet/Screenshot_1562579118.png?w=100)
+
+<img src="https://github.com/chinafelix/app/blob/master/screenSheet/Screenshot_1562579118.png" width="100" />
+![Image](https://github.com/chinafelix/app/blob/master/screenSheet/Screenshot_1562579118.png)
 ![Image](https://github.com/chinafelix/app/blob/master/screenSheet/Screenshot_1562579125.png)
 ![Image](https://github.com/chinafelix/app/blob/master/screenSheet/Screenshot_1562579134.png)
 ![Image](https://github.com/chinafelix/app/blob/master/screenSheet/Screenshot_1562579140.png)
